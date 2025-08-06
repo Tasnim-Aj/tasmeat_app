@@ -50,6 +50,7 @@ class UploadService {
         transcriptUrl,
         data: jsonEncode({
           'audio_url': audioUrl,
+          'language_code': 'ar',
         }),
         options: Options(
           headers: {
@@ -57,7 +58,7 @@ class UploadService {
           },
         ),
       );
-
+      print(response);
       return response.data['id'];
     } catch (e) {
       print('❌ فشل طلب التفريغ: $e');

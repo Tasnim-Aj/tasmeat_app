@@ -58,7 +58,7 @@ class UploadService {
           },
         ),
       );
-      print(response);
+
       return response.data['id'];
     } catch (e) {
       print('❌ فشل طلب التفريغ: $e');

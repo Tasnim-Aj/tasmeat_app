@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:tasmeat_app/view/screens/recordScreen.dart';
+import 'package:tasmeat_app/bloc/hadith_bloc.dart';
+import 'package:tasmeat_app/services/hadith_service.dart';
+
+import 'view/screens/indexing_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +18,15 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: RecordScreen(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+            create: (context) => HadithBloc(hadithService: HadithService())
+              ..add(ViewHadithEvent())),
+      ],
+      child: MaterialApp(
+        home: IndexingScreen(),
+      ),
     );
   }
 }

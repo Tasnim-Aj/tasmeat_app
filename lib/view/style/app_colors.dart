@@ -10,6 +10,8 @@ class AppColors {
   static const Color title = Color(0xFFEDECEC);
   static const Color textPrimary = Color(0xFF373737);
   static const Color textSecondary = Color(0xFF8F8D7D);
+  static const Color orange = Color(0xFFF4862C);
+  static const Color green = Color(0xFFF61933E);
   // static const Color textOnPrimary = Color(0xFFFFFFFF);
 
   // ألوان الخلفية
@@ -17,7 +19,8 @@ class AppColors {
   // static const Color surface = Color(0xFFFFFFFF);
   // static const Color error = Color(0xFFD32F2F);
 
-  static const Color container = Color(0xFF9FCAD7);
+  static const Color containerPrimary = Color(0xFF9FCAD7);
+  static const Color containerSecondary = Color(0xFFFFFFFF);
 
   // // ألوان إضافية من التصميم
   // static const Color accent = Color(0xFF607D8B); // أزرق رمادي

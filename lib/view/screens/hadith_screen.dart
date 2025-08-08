@@ -148,7 +148,9 @@ class HadithScreen extends StatelessWidget {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  const ListiningScreen())),
+                                                  ListiningScreen(
+                                                    hadith: hadith,
+                                                  ))),
                                     ),
                                   ],
                                 ),

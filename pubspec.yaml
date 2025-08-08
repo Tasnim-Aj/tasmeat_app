@@ -47,6 +47,7 @@ dependencies:
   bloc: ^9.0.0
   flutter_screenutil: ^5.9.3
   google_fonts: ^6.3.0
+  audioplayers: ^6.4.0
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,7 @@ flutter:
      - .env
      - assets/hadiths.json
      - assets/images/
+     - assets/sounds/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -31,10 +31,13 @@ class AppColors {
   // static const Color memorization = Color(0xFF673AB7); // بنفسجي للحفظ
   // static const Color review = Color(0xFFFF9800); // برتقالي للمراجعة
 
-  // ظلال اللون الأخضر (Gradient)
-  static const List<Color> primaryGradient = [
-    Color(0xFFFFFFFF),
-    Color(0xFFE2E2E2),
-    Color(0xFFFFFFFF),
-  ];
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [
+      Color(0xFFFFFFFF), // أبيض
+      Color(0xFFE2E2E2), // رمادي فاتح
+      Color(0xFFFFFFFF), // أبيض
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

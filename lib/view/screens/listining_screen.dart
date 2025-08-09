@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tasmeat_app/view/screens/recordScreen.dart';
 import 'package:tasmeat_app/view/widgets/audio_player.dart';
 
 import '../../model/hadith_model.dart';
@@ -269,28 +270,38 @@ class ListiningScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.mic,
-                          color: AppColors.containerSecondary,
-                          size: 16.sp,
-                        ),
-                        SizedBox(
-                          height: 11.h,
-                        ),
-                        Text(
-                          'تسميع',
-                          style: GoogleFonts.aladin(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w400,
-                            height: 0.47.sp,
-                            letterSpacing: 0,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RecordScreen(
+                                      hadith: hadith,
+                                    )));
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.mic,
                             color: AppColors.containerSecondary,
+                            size: 16.sp,
                           ),
-                        )
-                      ],
+                          SizedBox(
+                            height: 11.h,
+                          ),
+                          Text(
+                            'تسميع',
+                            style: GoogleFonts.aladin(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w400,
+                              height: 0.47.sp,
+                              letterSpacing: 0,
+                              color: AppColors.containerSecondary,
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                     Container(
                       width: 75.w,

@@ -5,8 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/bloc/hadith_bloc.dart';
 import 'package:tasmeat_app/services/hadith_service.dart';
-
-import 'view/screens/baqa_screen.dart';
+import 'package:tasmeat_app/view/screens/indexing_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +33,7 @@ class MyApp extends StatelessWidget {
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: BaqaScreen(),
+            home: IndexingScreen(),
           ),
         );
       },

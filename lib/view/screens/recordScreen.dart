@@ -44,6 +44,7 @@ class _RecordScreenState extends State<RecordScreen> {
   final TextEditingController _textEditingController = TextEditingController();
   bool _isTextChanged = false;
   String _correctionResult = '';
+  String _correctedText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -197,10 +198,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 width: 362.w,
                 // height: 324.h,
                 height: 80.h,
-                margin: EdgeInsets.only(
-                    // top: 11.r,
-                    left: 14.r,
-                    right: 14.r),
+                margin: EdgeInsets.only(top: 11.r, left: 14.r, right: 14.r),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   gradient: AppColors.primaryGradient,
@@ -221,17 +219,50 @@ class _RecordScreenState extends State<RecordScreen> {
                         controller: _textEditingController
                           ..text = _transcriptionText!,
                         maxLines: null,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                        ),
+                        decoration:
+                            const InputDecoration(border: InputBorder.none),
                         style: GoogleFonts.cairo(fontSize: 14.sp),
                         onChanged: (text) {
                           setState(() {
                             _transcriptionText = text;
                             _isTextChanged = true;
                           });
-                          debugPrint('====== نص معدل ======');
-                          debugPrint('المحتوى: $text');
+                        },
+                        onTap: () {
+                          final cursorPos =
+                              _textEditingController.selection.baseOffset;
+                          final renderBox =
+                              context.findRenderObject() as RenderBox;
+
+                          // // الحساب الصحيح للموضع (التعديل الأساسي)
+                          // final tapPosition = renderBox.localToGlobal(
+                          //   Offset(
+                          //     _textEditingController.selection.extentOffset *
+                          //         10.0, // تقدير عرض الحروف
+                          //     renderBox.size.height -
+                          //         20.0, // ضبط الارتفاع ليكون داخل الـ TextField
+                          //   ),
+                          // );
+
+                          // debugPrint('Corrected Tap Position: $tapPosition');
+
+                          if (cursorPos >= 0 &&
+                              cursorPos <= _textEditingController.text.length) {
+                            String currentWord = _getWordAtPosition(
+                                _textEditingController.text, cursorPos);
+                            if (currentWord.isNotEmpty) {
+                              String suggestion =
+                                  _getSuggestionForWord(currentWord);
+                              if (suggestion != currentWord) {
+                                _showSuggestionTooltipAtWord(
+                                  context,
+                                  currentWord,
+                                  suggestion,
+                                  cursorPos,
+                                );
+                              }
+                            }
+                          }
                         },
                       ),
                     ),
@@ -239,6 +270,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 ),
               ),
             ],
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -354,6 +386,7 @@ class _RecordScreenState extends State<RecordScreen> {
                       ),
               ),
             ],
+
             // const SizedBox(height: 24),
             Spacer(),
             Container(
@@ -707,6 +740,213 @@ class _RecordScreenState extends State<RecordScreen> {
     return 1.0 - (distance / maxLength);
   }
 
+  String _findClosestWord(String input, List<String> dictionary) {
+    input = _removeTashkeel(input);
+
+    String closestWord = '';
+    int minDistance = 999;
+
+    for (String word in dictionary) {
+      String cleanWord = _removeTashkeel(word);
+      int distance = _levenshteinDistance(input, cleanWord);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestWord = word;
+      }
+    }
+
+    return closestWord;
+  }
+
+  Widget _buildColoredResult(String result) {
+    List<TextSpan> spans = [];
+    List<String> lines = result.split('\n');
+
+    for (String line in lines) {
+      if (line.startsWith('الدقة') || line.startsWith('التشابه')) {
+        spans.add(TextSpan(
+          text: '$line\t \t',
+          style: GoogleFonts.cairo(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.blue[700],
+          ),
+        ));
+      } else if (line.contains('❌')) {
+        // تلوين الأجزاء الخاطئة
+        List<String> parts = line.split('❌');
+        for (int i = 0; i < parts.length; i++) {
+          if (parts[i].isEmpty) continue;
+
+          if (i % 2 == 1) {
+            // الجزء الخاطئ
+            spans.add(TextSpan(
+              text: parts[i],
+              style: GoogleFonts.cairo(
+                fontSize: 14.sp,
+                color: Colors.red,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ));
+
+            // إضافة الاقتراح إن وجد
+            if (parts[i].contains('(→')) {
+              List<String> suggestionParts = parts[i].split('(→');
+              spans.add(TextSpan(
+                text: ' → ${suggestionParts[1]}',
+                style: GoogleFonts.cairo(
+                  fontSize: 14.sp,
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ));
+            }
+          } else {
+            // الجزء الصحيح
+            spans.add(TextSpan(
+              text: parts[i],
+              style: GoogleFonts.cairo(
+                fontSize: 14.sp,
+                color: Colors.black,
+              ),
+            ));
+          }
+        }
+        spans.add(const TextSpan(text: '\n'));
+      } else {
+        spans.add(TextSpan(
+          text: '$line\n',
+          style: GoogleFonts.cairo(
+            fontSize: 14.sp,
+            color: Colors.black,
+          ),
+        ));
+      }
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+    );
+  }
+
+  Widget _buildUserTextWithHighlights() {
+    if (_transcriptionText == null || _transcriptionText!.isEmpty) {
+      return Text('لا يوجد نص مدخل');
+    }
+
+    List<TextSpan> spans = [];
+    List<String> userWords = _transcriptionText!.split(' ');
+    List<String> originalWords = hadith.text.split(' ');
+
+    for (int i = 0; i < userWords.length; i++) {
+      String userWord = userWords[i];
+      String originalWord = i < originalWords.length ? originalWords[i] : '';
+
+      if (originalWord.isNotEmpty &&
+          _wordSimilarity(userWord, originalWord) < 0.8) {
+        // كلمة خاطئة
+        spans.add(TextSpan(
+          text: '$userWord ',
+          style: GoogleFonts.cairo(
+            color: Colors.red,
+            backgroundColor: Colors.red[50],
+            decoration: TextDecoration.underline,
+          ),
+        ));
+      } else {
+        // كلمة صحيحة
+        spans.add(TextSpan(
+          text: '$userWord ',
+          style: GoogleFonts.cairo(
+            color: Colors.black,
+          ),
+        ));
+      }
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+    );
+  }
+
+  Widget _buildCorrectedTextWithHighlights() {
+    if (_correctedText.isEmpty) {
+      return Text('لا يوجد نص مصحح بعد');
+    }
+
+    List<TextSpan> spans = [];
+    List<String> correctedWords = _correctedText.split(' ');
+    List<String> userWords = _transcriptionText?.split(' ') ?? [];
+    List<String> originalWords = hadith.text.split(' ');
+
+    for (int i = 0; i < correctedWords.length; i++) {
+      String correctedWord = correctedWords[i];
+      String userWord = i < userWords.length ? userWords[i] : '';
+      String originalWord = i < originalWords.length ? originalWords[i] : '';
+
+      if (userWord.isNotEmpty &&
+          _wordSimilarity(userWord, originalWord) < 0.8) {
+        // كلمة تم تصحيحها
+        spans.add(TextSpan(
+          text: '$correctedWord ',
+          style: GoogleFonts.cairo(
+            color: Colors.green[800],
+            backgroundColor: Colors.green[50],
+            fontWeight: FontWeight.bold,
+          ),
+        ));
+      } else {
+        // كلمة لم تحتاج تصحيح
+        spans.add(TextSpan(
+          text: '$correctedWord ',
+          style: GoogleFonts.cairo(
+            color: Colors.black,
+          ),
+        ));
+      }
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+    );
+  }
+
+  // أضف هذه المتغيرات في أعلى الكلاس
+  List<bool> _wordCorrectness = []; // لتخزين ما إذا كانت كل كلمة صحيحة
+  List<String> _userWords = []; // لتخزين الكلمات المدخلة
+  List<String> _suggestions = []; // لتخزين الاقتراحات
+
+// عدل دالة _compareTexts
+//   void _compareTexts() {
+//     final userText = _transcriptionText ?? '';
+//     _userWords = userText.split(' ');
+//     final originalWords = hadith.text.split(' ');
+//
+//     _wordCorrectness = [];
+//     _suggestions = [];
+//     _correctedText = '';
+//
+//     for (int i = 0; i < originalWords.length; i++) {
+//       String originalWord = originalWords[i];
+//       String userWord = i < _userWords.length ? _userWords[i] : '';
+//
+//       double similarity = _wordSimilarity(originalWord, userWord);
+//       _wordCorrectness.add(similarity > 0.8);
+//
+//       if (similarity > 0.8) {
+//         _correctedText += '$originalWord ';
+//         _suggestions.add(originalWord);
+//       } else {
+//         String suggestion = _findClosestWord(userWord, originalWords);
+//         _correctedText += '$suggestion ';
+//         _suggestions.add(suggestion);
+//       }
+//     }
+//
+//     setState(() {});
+//   }
+
   void _compareTexts() {
     final userText = _transcriptionText ?? '';
 
@@ -776,94 +1016,303 @@ ${corrections.join(' ')}
     });
   }
 
-// دالة للعثور على أقرب كلمة مقترحة
-  String _findClosestWord(String input, List<String> dictionary) {
-    input = _removeTashkeel(input);
+  //دالة للعثور على الاقتراحات
+  String _getWordAtPosition(String text, int position) {
+    if (text.isEmpty || position < 0 || position > text.length) return '';
 
-    String closestWord = '';
-    int minDistance = 999;
-
-    for (String word in dictionary) {
-      String cleanWord = _removeTashkeel(word);
-      int distance = _levenshteinDistance(input, cleanWord);
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestWord = word;
-      }
+    int start = position;
+    while (start > 0 && !text[start - 1].trim().isEmpty) {
+      start--;
     }
 
-    return closestWord;
+    int end = position;
+    while (end < text.length && !text[end].trim().isEmpty) {
+      end++;
+    }
+
+    return text.substring(start, end).trim();
   }
 
-  Widget _buildColoredResult(String result) {
-    List<TextSpan> spans = [];
-    List<String> lines = result.split('\n');
+  String _getSuggestionForWord(String word) {
+    if (hadith.text.isEmpty) return word;
 
-    for (String line in lines) {
-      if (line.startsWith('الدقة') || line.startsWith('التشابه')) {
-        spans.add(TextSpan(
-          text: '$line\n',
-          style: GoogleFonts.cairo(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.blue[700],
-          ),
-        ));
-      } else if (line.contains('❌')) {
-        // تلوين الأجزاء الخاطئة
-        List<String> parts = line.split('❌');
-        for (int i = 0; i < parts.length; i++) {
-          if (parts[i].isEmpty) continue;
+    final originalWords = hadith.text.split(' ');
+    double maxSimilarity = 0.0;
+    String bestMatch = word;
 
-          if (i % 2 == 1) {
-            // الجزء الخاطئ
-            spans.add(TextSpan(
-              text: parts[i],
-              style: GoogleFonts.cairo(
-                fontSize: 14.sp,
-                color: Colors.red,
-                decoration: TextDecoration.lineThrough,
-              ),
-            ));
-
-            // إضافة الاقتراح إن وجد
-            if (parts[i].contains('(→')) {
-              List<String> suggestionParts = parts[i].split('(→');
-              spans.add(TextSpan(
-                text: ' → ${suggestionParts[1]}',
-                style: GoogleFonts.cairo(
-                  fontSize: 14.sp,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ));
-            }
-          } else {
-            // الجزء الصحيح
-            spans.add(TextSpan(
-              text: parts[i],
-              style: GoogleFonts.cairo(
-                fontSize: 14.sp,
-                color: Colors.black,
-              ),
-            ));
-          }
-        }
-        spans.add(const TextSpan(text: '\n'));
-      } else {
-        spans.add(TextSpan(
-          text: '$line\n',
-          style: GoogleFonts.cairo(
-            fontSize: 14.sp,
-            color: Colors.black,
-          ),
-        ));
+    for (String originalWord in originalWords) {
+      double similarity = _wordSimilarity(word, originalWord);
+      if (similarity > maxSimilarity) {
+        maxSimilarity = similarity;
+        bestMatch = originalWord;
       }
     }
 
-    return RichText(
-      text: TextSpan(children: spans),
+    return maxSimilarity > 0.6 ? bestMatch : word;
+  }
+
+  void _showSuggestionTooltipAtWord(
+      BuildContext context, String word, String suggestion, int cursorPos) {
+    final text = _textEditingController.text;
+    final startIndex = text.lastIndexOf(word, cursorPos);
+
+    if (startIndex < 0) return;
+
+    // حساب موضع الكلمة بدقة
+    final textBefore = text.substring(0, startIndex);
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: textBefore,
+        style: GoogleFonts.cairo(fontSize: 14.sp),
+      ),
+      textDirection: TextDirection.rtl,
     );
+    textPainter.layout();
+
+    // حساب عرض الكلمة نفسها
+    final wordPainter = TextPainter(
+      text: TextSpan(
+        text: word,
+        style: GoogleFonts.cairo(fontSize: 14.sp),
+      ),
+      textDirection: TextDirection.rtl,
+    );
+    wordPainter.layout();
+
+    // الحصول على موقع الـ TextField
+    final renderBox = context.findRenderObject() as RenderBox;
+    final fieldOffset = renderBox.localToGlobal(Offset.zero);
+
+    // حساب موقع بداية الكلمة ومركزها
+    final wordStartX = textPainter.width;
+    final wordCenterX = wordStartX + (wordPainter.width / 2);
+
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: fieldOffset.dx + wordCenterX - 100.w, // تعديل ليكون مركزياً
+        top: fieldOffset.dy, // ارتفاع فوق الكلمة
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // السهم (Arrow) - معدل ليكون تحت الـ Tooltip
+              Transform.translate(
+                offset: Offset(wordCenterX, wordCenterX), // تعديل موضع السهم
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.white,
+                  size: 24.sp,
+                ),
+              ),
+              Container(
+                width: 200.w,
+                padding: EdgeInsets.all(12.r),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8.r,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'الاقتراح:',
+                      style: GoogleFonts.cairo(
+                        fontSize: 14.sp,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      suggestion,
+                      style: GoogleFonts.cairo(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8.h),
+                    GestureDetector(
+                      onTap: () {
+                        _replaceCurrentWord(suggestion);
+                        overlayEntry.remove();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text(
+                          'استبدال',
+                          style: GoogleFonts.cairo(
+                            fontSize: 14.sp,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
+
+  // void _showSuggestionTooltipAtWord(
+  //   BuildContext context,
+  //   String word,
+  //   String suggestion,
+  //   int cursorPos,
+  //   Offset tapPosition,
+  // ) {
+  //   // 1. التحقق من أن Overlay.of(context) متاح
+  //   if (Overlay.of(context) == null) {
+  //     debugPrint('Overlay context is null');
+  //     return;
+  //   }
+  //
+  //   late OverlayEntry overlayEntry;
+  //
+  //   overlayEntry = OverlayEntry(
+  //     builder: (context) {
+  //       // 2. حساب الموضع النهائي مع ضبط RTL
+  //       final leftPosition = tapPosition.dx - (240.w / 2); // توسيط التولتيب
+  //       final topPosition = tapPosition.dy - 150.h; // ارتفاع مناسب
+  //
+  //       return Positioned(
+  //         left: leftPosition,
+  //         top: topPosition,
+  //         child: Material(
+  //           color: Colors.transparent,
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.end, // مهم للنصوص العربية
+  //             children: [
+  //               // 3. إضافة السهم المؤشر
+  //               Padding(
+  //                 padding: EdgeInsets.only(left: 100.w), // ضبط موضع السهم
+  //                 child: Icon(
+  //                   Icons.arrow_drop_down,
+  //                   color: Colors.white,
+  //                   size: 28.sp,
+  //                 ),
+  //               ),
+  //               // 4. محتوى التولتيب
+  //               Container(
+  //                 width: 240.w,
+  //                 decoration: BoxDecoration(
+  //                   color: Colors.white,
+  //                   borderRadius: BorderRadius.circular(12.r),
+  //                   boxShadow: [
+  //                     BoxShadow(
+  //                       color: Colors.black.withOpacity(0.2),
+  //                       blurRadius: 10.r,
+  //                       spreadRadius: 2.r,
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 child: Column(
+  //                   children: [
+  //                     // ... (باقي المحتوى كما هو)
+  //                   ],
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  //
+  //   // 5. إدراج التولتيب مع التحقق
+  //   try {
+  //     Overlay.of(context).insert(overlayEntry);
+  //     debugPrint('Tooltip shown successfully');
+  //   } catch (e) {
+  //     debugPrint('Error showing tooltip: $e');
+  //   }
+  //
+  //   // 6. إخفاء التولتيب بعد فترة
+  //   Future.delayed(const Duration(seconds: 5), () {
+  //     if (overlayEntry.mounted) {
+  //       overlayEntry.remove();
+  //       debugPrint('Tooltip removed');
+  //     }
+  //   });
+  // }
+
+  Offset _getWordOffset(String fullText, String word, int wordStartIndex) {
+    final textBefore = fullText.substring(0, wordStartIndex);
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: textBefore,
+        style: GoogleFonts.cairo(fontSize: 14.sp),
+      ),
+      textDirection: TextDirection.rtl,
+    );
+    textPainter.layout();
+    return Offset(textPainter.width, -textPainter.height);
+  }
+
+  void _replaceCurrentWord(String newWord) {
+    final selection = _textEditingController.selection;
+    if (selection.isCollapsed) {
+      final cursorPosition = selection.baseOffset;
+      final text = _textEditingController.text;
+      final word = _getWordAtPosition(text, cursorPosition);
+
+      if (word.isNotEmpty) {
+        final start = text.lastIndexOf(word, cursorPosition);
+        final newText = text.replaceRange(start, start + word.length, newWord);
+
+        _textEditingController.text = newText;
+        _textEditingController.selection = TextSelection.collapsed(
+          offset: start + newWord.length,
+        );
+
+        setState(() {
+          _transcriptionText = newText;
+        });
+      }
+    }
+  }
+
+  // double _wordSimilarity(String word1, String word2) {
+  //   // يمكنك استخدام الدالة التي سبق تعريفها أو هذه البسيطة:
+  //   word1 = word1.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), ''); // إزالة التشكيل
+  //   word2 = word2.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), '');
+  //
+  //   if (word1 == word2) return 1.0;
+  //
+  //   int maxLength = max(word1.length, word2.length);
+  //   if (maxLength == 0) return 1.0;
+  //
+  //   int distance = _levenshteinDistance(word1, word2);
+  //   return 1.0 - (distance / maxLength);
+  // }
+  //
+  // int _levenshteinDistance(String a, String b) {
+  //   // دالة حساب المسافة كما سبق
+  // }
 }

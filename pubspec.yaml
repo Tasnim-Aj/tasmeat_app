@@ -48,6 +48,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   google_fonts: ^6.3.0
   audioplayers: ^6.4.0
+  blobs: ^2.0.0
 
 dev_dependencies:
   flutter_test:

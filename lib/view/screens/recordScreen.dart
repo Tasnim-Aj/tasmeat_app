@@ -196,7 +196,6 @@ class _RecordScreenState extends State<RecordScreen> {
             if (_transcriptionText != null) ...[
               Container(
                 width: 362.w,
-                // height: 324.h,
                 height: 80.h,
                 margin: EdgeInsets.only(top: 11.r, left: 14.r, right: 14.r),
                 decoration: BoxDecoration(
@@ -215,54 +214,52 @@ class _RecordScreenState extends State<RecordScreen> {
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: TextField(
-                        controller: _textEditingController
-                          ..text = _transcriptionText!,
-                        maxLines: null,
-                        decoration:
-                            const InputDecoration(border: InputBorder.none),
-                        style: GoogleFonts.cairo(fontSize: 14.sp),
-                        onChanged: (text) {
-                          setState(() {
-                            _transcriptionText = text;
-                            _isTextChanged = true;
-                          });
-                        },
-                        onTap: () {
-                          final cursorPos =
-                              _textEditingController.selection.baseOffset;
-                          final renderBox =
-                              context.findRenderObject() as RenderBox;
+                      child: Builder(
+                        builder: (context) {
+                          return TextField(
+                            controller: _textEditingController
+                              ..text = _transcriptionText!,
+                            maxLines: null,
+                            decoration:
+                                const InputDecoration(border: InputBorder.none),
+                            style: GoogleFonts.cairo(fontSize: 14.sp),
+                            onChanged: (text) {
+                              setState(() {
+                                _transcriptionText = text;
+                                _isTextChanged = true;
+                              });
+                            },
+                            onTap: () {
+                              final cursorPos =
+                                  _textEditingController.selection.baseOffset;
+                              final renderBox =
+                                  context.findRenderObject() as RenderBox;
+                              final textFieldOffset =
+                                  renderBox.localToGlobal(Offset.zero);
+                              final textFieldHeight = renderBox.size.height;
 
-                          // // الحساب الصحيح للموضع (التعديل الأساسي)
-                          // final tapPosition = renderBox.localToGlobal(
-                          //   Offset(
-                          //     _textEditingController.selection.extentOffset *
-                          //         10.0, // تقدير عرض الحروف
-                          //     renderBox.size.height -
-                          //         20.0, // ضبط الارتفاع ليكون داخل الـ TextField
-                          //   ),
-                          // );
-
-                          // debugPrint('Corrected Tap Position: $tapPosition');
-
-                          if (cursorPos >= 0 &&
-                              cursorPos <= _textEditingController.text.length) {
-                            String currentWord = _getWordAtPosition(
-                                _textEditingController.text, cursorPos);
-                            if (currentWord.isNotEmpty) {
-                              String suggestion =
-                                  _getSuggestionForWord(currentWord);
-                              if (suggestion != currentWord) {
-                                _showSuggestionTooltipAtWord(
-                                  context,
-                                  currentWord,
-                                  suggestion,
-                                  cursorPos,
-                                );
+                              if (cursorPos >= 0 &&
+                                  cursorPos <=
+                                      _textEditingController.text.length) {
+                                String currentWord = _getWordAtPosition(
+                                    _textEditingController.text, cursorPos);
+                                if (currentWord.isNotEmpty) {
+                                  String suggestion =
+                                      _getSuggestionForWord(currentWord);
+                                  if (suggestion != currentWord) {
+                                    _showCustomTooltip(
+                                      context: context,
+                                      word: currentWord,
+                                      suggestion: suggestion,
+                                      textFieldOffset: textFieldOffset,
+                                      textFieldHeight: textFieldHeight,
+                                      cursorPos: cursorPos,
+                                    );
+                                  }
+                                }
                               }
-                            }
-                          }
+                            },
+                          );
                         },
                       ),
                     ),
@@ -1051,6 +1048,97 @@ ${corrections.join(' ')}
     return maxSimilarity > 0.6 ? bestMatch : word;
   }
 
+  // correct
+  void _showCustomTooltip({
+    required BuildContext context,
+    required String word,
+    required String suggestion,
+    required Offset textFieldOffset,
+    required double textFieldHeight,
+    required int cursorPos,
+  }) {
+    final text = _textEditingController.text;
+    final startIndex = text.lastIndexOf(' ', cursorPos) + 1;
+    final endIndex = text.indexOf(' ', cursorPos);
+    final currentWord = text.substring(
+      startIndex,
+      endIndex == -1 ? text.length : endIndex,
+    );
+
+    final textBeforeCursor = text.substring(0, cursorPos);
+    final textPainter = TextPainter(
+      text: TextSpan(
+          text: textBeforeCursor, style: GoogleFonts.cairo(fontSize: 14.sp)),
+      textDirection: TextDirection.rtl, // أو TextDirection.ltr حسب اللغة
+      maxLines: 1,
+    );
+    textPainter.layout();
+
+    final wordPainter = TextPainter(
+      text: TextSpan(
+          text: currentWord, style: GoogleFonts.cairo(fontSize: 14.sp)),
+      textDirection: TextDirection.rtl,
+      maxLines: 1,
+    );
+    wordPainter.layout();
+
+    final wordStartX = textPainter.width;
+    final wordCenterX = wordStartX + (wordPainter.width / 2);
+
+    final overlayState = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: textFieldOffset.dx + wordCenterX,
+        top: textFieldOffset.dy + textFieldHeight,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black26, blurRadius: 8, spreadRadius: 1),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('الاقتراح: $suggestion',
+                    style: GoogleFonts.cairo(fontSize: 14)),
+                SizedBox(height: 8),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[100],
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  onPressed: () {
+                    _replaceCurrentWord(suggestion);
+                    overlayEntry.remove();
+                  },
+                  child:
+                      Text('استبدال', style: GoogleFonts.cairo(fontSize: 14)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlayState.insert(overlayEntry);
+
+    // إغلاق تلقائي بعد 5 ثوان
+    Future.delayed(Duration(seconds: 5)).then((_) {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
+  }
+
   void _showSuggestionTooltipAtWord(
       BuildContext context, String word, String suggestion, int cursorPos) {
     final text = _textEditingController.text;
@@ -1108,7 +1196,7 @@ ${corrections.join(' ')}
                 ),
               ),
               Container(
-                width: 200.w,
+                width: 150.w,
                 padding: EdgeInsets.all(12.r),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1298,21 +1386,21 @@ ${corrections.join(' ')}
     }
   }
 
-  // double _wordSimilarity(String word1, String word2) {
-  //   // يمكنك استخدام الدالة التي سبق تعريفها أو هذه البسيطة:
-  //   word1 = word1.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), ''); // إزالة التشكيل
-  //   word2 = word2.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), '');
-  //
-  //   if (word1 == word2) return 1.0;
-  //
-  //   int maxLength = max(word1.length, word2.length);
-  //   if (maxLength == 0) return 1.0;
-  //
-  //   int distance = _levenshteinDistance(word1, word2);
-  //   return 1.0 - (distance / maxLength);
-  // }
-  //
-  // int _levenshteinDistance(String a, String b) {
-  //   // دالة حساب المسافة كما سبق
-  // }
+// double _wordSimilarity(String word1, String word2) {
+//   // يمكنك استخدام الدالة التي سبق تعريفها أو هذه البسيطة:
+//   word1 = word1.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), ''); // إزالة التشكيل
+//   word2 = word2.replaceAll(RegExp(r'[ًٌٍَُِّْ]'), '');
+//
+//   if (word1 == word2) return 1.0;
+//
+//   int maxLength = max(word1.length, word2.length);
+//   if (maxLength == 0) return 1.0;
+//
+//   int distance = _levenshteinDistance(word1, word2);
+//   return 1.0 - (distance / maxLength);
+// }
+//
+// int _levenshteinDistance(String a, String b) {
+//   // دالة حساب المسافة كما سبق
+// }
 }

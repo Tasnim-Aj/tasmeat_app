@@ -49,6 +49,7 @@ dependencies:
   google_fonts: ^6.3.0
   audioplayers: ^6.4.0
   blobs: ^2.0.0
+  super_tooltip: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -75,7 +76,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
      - .env
-     - assets/hadiths.json
      - assets/images/
      - assets/sounds/
   #   - images/a_dot_ham.jpeg

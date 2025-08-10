@@ -1069,7 +1069,7 @@ ${corrections.join(' ')}
     final textPainter = TextPainter(
       text: TextSpan(
           text: textBeforeCursor, style: GoogleFonts.cairo(fontSize: 14.sp)),
-      textDirection: TextDirection.rtl, // أو TextDirection.ltr حسب اللغة
+      textDirection: TextDirection.rtl,
       maxLines: 1,
     );
     textPainter.layout();

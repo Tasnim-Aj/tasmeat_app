@@ -70,7 +70,7 @@ class TypesScreen extends StatelessWidget {
             ),
           ),
         ),
-        body: Column(
+        body: Stack(
           children: [
             InkWell(
               onTap: () {
@@ -78,7 +78,9 @@ class TypesScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => IndexingScreen()));
               },
               child: Container(
-                margin: EdgeInsets.only(top: 198, left: 45),
+                // alignment: Alignment.center,
+                margin: EdgeInsets.only(top: 74, left: 45),
+                // padding: EdgeInsets.only(left: 58),
                 width: 300.w,
                 height: 160.h,
                 decoration: BoxDecoration(
@@ -87,21 +89,27 @@ class TypesScreen extends StatelessWidget {
                 ),
                 child: Stack(
                   children: [
-                    Text(
-                      '40',
-                      style: GoogleFonts.cairo(
-                          fontSize: 110.sp,
-                          fontWeight: FontWeight.w700,
-                          height: 0.47,
-                          color: AppColors.primary),
+                    Padding(
+                      padding: EdgeInsets.only(right: 116.r, top: 47.r),
+                      child: Text(
+                        '40',
+                        style: GoogleFonts.cairo(
+                            fontSize: 110.sp,
+                            fontWeight: FontWeight.w700,
+                            height: 0.47,
+                            color: AppColors.primary),
+                      ),
                     ),
-                    Text(
-                      'الأربعون النووية',
-                      style: GoogleFonts.cairo(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          height: 0.42,
-                          color: AppColors.primary),
+                    Padding(
+                      padding: EdgeInsets.only(right: 40.r, top: 53.61.r),
+                      child: Text(
+                        'الأربعون  \n النووية',
+                        style: GoogleFonts.cairo(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w600,
+                            height: 42 / 20,
+                            color: AppColors.primary),
+                      ),
                     ),
                   ],
                 ),

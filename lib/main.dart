@@ -5,8 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/bloc/hadith_bloc.dart';
 import 'package:tasmeat_app/services/hadith_service.dart';
+import 'package:tasmeat_app/view/style/app_theme.dart';
 
-import 'view/screens/types_screen.dart';
+import 'view/screens/auth/auth_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,8 @@ class MyApp extends StatelessWidget {
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
-            home: TypesScreen(),
+            theme: themeData,
+            home: AuthScreen(),
           ),
         );
       },

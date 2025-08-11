@@ -12,6 +12,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFF8F8D7D);
   static const Color orange = Color(0xFFF4862C);
   static const Color green = Color(0xFFF61933E);
+  static const Color red = Color(0xFFED4141);
   // static const Color textOnPrimary = Color(0xFFFFFFFF);
 
   // ألوان الخلفية

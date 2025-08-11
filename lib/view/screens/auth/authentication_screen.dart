@@ -81,13 +81,7 @@ class AuthenticationScreen extends StatelessWidget {
                           width: 3.w,
                         ),
                         InkWell(
-                          onTap: () {
-                            // Navigator.push(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //         builder: (context) =>
-                            //             ResetPassword1Screen()));
-                          },
+                          onTap: () {},
                           child: Text(
                             ' إرسال مرة أخرى',
                             style: Theme.of(context).textTheme.bodySmall,

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/view/style/app_colors.dart';
 
+import '../widgets/custom_drawer.dart';
 import 'indexing_screen.dart';
 
 class TypesScreen extends StatelessWidget {
@@ -32,31 +33,38 @@ class TypesScreen extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               toolbarHeight: 72.h,
-              leading: Padding(
-                padding: EdgeInsets.only(right: 15.r, top: 16.r),
-                child: Stack(
-                  children: [
-                    Image.asset(
-                      'assets/images/profile_user.png',
-                      width: 40.w,
-                      height: 40.h,
-                      color: Colors.white,
-                    ),
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      child: Container(
-                        width: 11.w,
-                        height: 11.h,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red,
+              leading: Builder(builder: (context) {
+                return Padding(
+                  padding: EdgeInsets.only(right: 15.r, top: 16.r),
+                  child: Stack(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                        child: Image.asset(
+                          'assets/images/profile_user.png',
+                          width: 40.w,
+                          height: 40.h,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: Container(
+                          width: 11.w,
+                          height: 11.h,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
               title: Text(
                 'المقررات',
                 style: GoogleFonts.cairo(
@@ -68,6 +76,14 @@ class TypesScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ),
+        drawer: Padding(
+          padding: EdgeInsets.only(top: 47.r),
+          child: Drawer(
+            width: 298.w,
+            backgroundColor: AppColors.containerSecondary,
+            child: CustomDrawer(),
           ),
         ),
         body: Stack(

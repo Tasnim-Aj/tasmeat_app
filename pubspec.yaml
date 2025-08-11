@@ -40,16 +40,11 @@ dependencies:
   record: ^6.0.0
   path_provider: ^2.1.5
   flutter_dotenv: ^5.2.1
-  web_socket_channel: ^3.0.3
-  flutter_sound: ^9.28.0
-  http: ^1.4.0
   flutter_bloc: ^9.1.1
   bloc: ^9.0.0
   flutter_screenutil: ^5.9.3
   google_fonts: ^6.3.0
   audioplayers: ^6.4.0
-  blobs: ^2.0.0
-  super_tooltip: ^2.1.0
 
 dev_dependencies:
   flutter_test:

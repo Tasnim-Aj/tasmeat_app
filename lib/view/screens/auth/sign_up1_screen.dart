@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tasmeat_app/model/signup_model.dart';
+import 'package:tasmeat_app/view/screens/types_screen.dart';
 import 'package:tasmeat_app/view/style/app_theme.dart';
 
+import '../../../bloc/auth/signup/signup_bloc.dart';
 import '../../style/app_colors.dart';
-import 'sign_up2_screen.dart';
 
 class SignUp1Screen extends StatelessWidget {
-  const SignUp1Screen({super.key});
+  SignUp1Screen({super.key});
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,23 +35,21 @@ class SignUp1Screen extends StatelessWidget {
                 ],
               ),
             )),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Theme.of(context).authContainer(
-              child: Column(
-                // mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 40.r, bottom: 49.r),
-                    child: Text(
-                      'إنشاء حساب',
-                      style: Theme.of(context).textTheme.titleLarge,
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Theme.of(context).authContainer(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(top: 40.r, bottom: 49.r),
+                      child: Text(
+                        'إنشاء حساب',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 404.16.h,
-                    child: Column(
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Column(
@@ -65,51 +69,13 @@ class SignUp1Screen extends StatelessWidget {
                               height: 7.h,
                             ),
                             TextField(
+                              controller: usernameController,
                               keyboardType: TextInputType.name,
                             ),
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'تاريخ الميلاد',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                    decoration: TextDecoration.none,
-                                  ),
-                            ),
-                            SizedBox(
-                              height: 7.h,
-                            ),
-                            TextField(
-                                // keyboardType: Tex,
-                                ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'رقم الهاتف',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textSecondary,
-                                    decoration: TextDecoration.none,
-                                  ),
-                            ),
-                            SizedBox(
-                              height: 7.h,
-                            ),
-                            TextField(
-                              keyboardType: TextInputType.number,
-                            ),
-                          ],
+                        SizedBox(
+                          height: 17.87,
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,50 +94,103 @@ class SignUp1Screen extends StatelessWidget {
                               height: 7.h,
                             ),
                             TextField(
+                              controller: emailController,
                               keyboardType: TextInputType.emailAddress,
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 17.87,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'كلمة المرور',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    decoration: TextDecoration.none,
+                                  ),
+                            ),
+                            SizedBox(
+                              height: 7.h,
+                            ),
+                            TextField(
+                              controller: passwordController,
+                              // keyboardType: TextInputType.text,
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 33.87, bottom: 44),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'منتسب لمعهد ما ؟',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        SizedBox(
-                          width: 21.w,
-                        ),
-                        Text(
-                          'إدخال الرمز الخاص',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: 33.87,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'منتسب لمعهد ما ؟',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          SizedBox(
+                            width: 21.w,
+                          ),
+                          Text(
+                            'إدخال الرمز الخاص',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.r),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SignUp2Screen()));
-                      },
-                      child: Text('التالي'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                    Spacer(),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 20.r),
+                      child: BlocConsumer<SignupBloc, SignupState>(
+                        listener: (context, state) {
+                          if (state is SignupDone) {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => TypesScreen()));
+                          }
+                          if (state is SignupError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(state.message)),
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is SignupLoading) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          return ElevatedButton(
+                            onPressed: () {
+                              final signupModel = SignupModel(
+                                username: usernameController.text,
+                                email: emailController.text,
+                                password: passwordController.text,
+                              );
 
-            //
-          ],
+                              context.read<SignupBloc>().add(
+                                  SignupRequested(signupModel: signupModel));
+                            },
+                            child: Text('انشاء حساب'),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              //
+            ],
+          ),
         ),
       ),
     );

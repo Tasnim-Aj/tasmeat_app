@@ -4,6 +4,7 @@ import 'package:tasmeat_app/model/login_request.dart';
 import 'package:tasmeat_app/model/login_response.dart';
 import 'package:tasmeat_app/model/profile_model.dart';
 import 'package:tasmeat_app/model/signup_model.dart';
+import 'package:tasmeat_app/model/wallet_model.dart';
 
 class AuthenticationService {
   Dio dio = Dio();
@@ -116,6 +117,32 @@ class AuthenticationService {
       return null;
     }
   }
+
+  Future<WalletModel?> fetchUserWallet() async {
+    try {
+      final response = await dio.get('$baseUrl/user/wallet');
+      if (response.statusCode == 200) {
+        return WalletModel.fromMap(response.data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Future<WalletModel?> fetchUserWallet() async {
+  //   try {
+  //     final response = await dio.get('$baseUrl/user/wallet');
+  //     if (response.statusCode == 200) {
+  //       return WalletModel.fromMap(response.data);
+  //     } else {
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     return null;
+  //   }
+  // }
 
   // Future<ProfileModel?> fetchUserProfile(String token) async {
   //   try {

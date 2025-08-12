@@ -4,3 +4,5 @@ part of 'profile_bloc.dart';
 sealed class ProfileEvent {}
 
 class FetchProfileEvent extends ProfileEvent {}
+
+// class FetchWalletEvent extends ProfileEvent {}

@@ -159,7 +159,7 @@ class CustomDrawer extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '80',
+                              state.wallet.balance.toString(),
                               style: GoogleFonts.cairo(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 18.sp,

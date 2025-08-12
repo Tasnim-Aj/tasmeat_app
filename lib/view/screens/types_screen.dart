@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/bloc/book/book_bloc.dart';
 import 'package:tasmeat_app/view/style/app_colors.dart';
 
+import '../../bloc/profile/profile_bloc.dart';
 import '../widgets/custom_drawer.dart';
 import 'indexing_screen.dart';
 
@@ -13,6 +14,9 @@ class TypesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileBloc>().add(FetchProfileEvent());
+    });
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(

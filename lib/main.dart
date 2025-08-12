@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/bloc/auth/login/login_bloc.dart';
 import 'package:tasmeat_app/bloc/auth/signup/signup_bloc.dart';
 import 'package:tasmeat_app/bloc/book/book_bloc.dart';
+import 'package:tasmeat_app/bloc/profile/profile_bloc.dart';
 import 'package:tasmeat_app/repo/books_repository/books_repository.dart';
 import 'package:tasmeat_app/services/authentication_service.dart';
 import 'package:tasmeat_app/services/books_service.dart';
@@ -26,7 +27,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, _) {
+        final authService = AuthenticationService();
         return MultiBlocProvider(
           providers: [
             // BlocProvider(
@@ -41,14 +42,18 @@ class MyApp extends StatelessWidget {
             //       ..add(ViewHadithEvent())),
             BlocProvider(
                 create: (context) =>
-                    SignupBloc(authenticationService: AuthenticationService())),
+                    SignupBloc(authenticationService: authService)),
             BlocProvider(
                 create: (context) =>
-                    LoginBloc(authenticationService: AuthenticationService())),
+                    LoginBloc(authenticationService: authService)),
             BlocProvider(
                 create: (context) =>
                     BookBloc(booksRepository: BooksRepository(BooksService()))
                       ..add(LoadAllBookEvent())),
+            BlocProvider(
+                create: (context) =>
+                    ProfileBloc(authenticationService: authService)
+                      ..add(FetchProfileEvent())),
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,

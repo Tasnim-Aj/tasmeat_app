@@ -2,17 +2,18 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tasmeat_app/model/login_request.dart';
 import 'package:tasmeat_app/model/login_response.dart';
+import 'package:tasmeat_app/model/profile_model.dart';
 import 'package:tasmeat_app/model/signup_model.dart';
 
 class AuthenticationService {
   Dio dio = Dio();
   late Response response;
-  String baseUrl = 'https://alhekmah-server-side.onrender.com/auth';
+  String baseUrl = 'https://alhekmah-server-side.onrender.com';
 
   Future<void> register({required SignupModel user}) async {
     try {
       final response = await dio.post(
-        '$baseUrl/register',
+        '$baseUrl/auth/register',
         data: user.toMap(),
       );
       print(response);
@@ -82,7 +83,7 @@ class AuthenticationService {
   Future<LoginResponse?> login(LoginRequest user) async {
     try {
       final response = await dio.post(
-        '$baseUrl/login',
+        '$baseUrl/auth/login',
         data: user.toMap(),
       );
 
@@ -102,4 +103,33 @@ class AuthenticationService {
       return null;
     }
   }
+
+  Future<ProfileModel?> fetchUserProfile() async {
+    try {
+      final response = await dio.get('$baseUrl/user/profile');
+      if (response.statusCode == 200) {
+        return ProfileModel.fromMap(response.data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Future<ProfileModel?> fetchUserProfile(String token) async {
+  //   try {
+  //     response = await dio.get('$baseUrl/user/profile',
+  //         options: Options(headers: {
+  //           'Authorization': 'Bearer $token',
+  //         }));
+  //     if (response.statusCode == 200) {
+  //       return ProfileModel.fromMap(response.data);
+  //     } else {
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     return null;
+  //   }
+  // }
 }

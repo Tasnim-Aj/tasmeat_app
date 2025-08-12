@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../bloc/profile/profile_bloc.dart';
 import '../style/app_colors.dart';
 import '../widgets/custom_drawer.dart';
 
@@ -12,6 +14,9 @@ class BaqaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileBloc>().add(FetchProfileEvent());
+    });
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(

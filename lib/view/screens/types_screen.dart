@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tasmeat_app/bloc/book/book_bloc.dart';
 import 'package:tasmeat_app/view/style/app_colors.dart';
 
 import '../widgets/custom_drawer.dart';
@@ -86,54 +88,80 @@ class TypesScreen extends StatelessWidget {
             child: CustomDrawer(),
           ),
         ),
-        body: Stack(
-          children: [
-            InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => IndexingScreen()));
-              },
-              child: Container(
-                // alignment: Alignment.center,
-                margin: EdgeInsets.only(top: 74, left: 45),
-                // padding: EdgeInsets.only(left: 58),
-                width: 300.w,
-                height: 160.h,
-                decoration: BoxDecoration(
-                  color: Color(0xFFE9FCFF),
-                  border: Border.all(width: 1.w, color: Color(0xFF9FCAD7)),
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(right: 116.r, top: 47.r),
-                      child: Text(
-                        '40',
-                        style: GoogleFonts.cairo(
-                            fontSize: 110.sp,
-                            fontWeight: FontWeight.w700,
-                            height: 0.47,
-                            color: AppColors.primary),
-                      ),
+        body: BlocBuilder<BookBloc, BookState>(
+          builder: (context, state) {
+            if (state is BookLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is BookLoaded) {
+              return ListView.builder(
+                itemCount: state.books.length,
+                itemBuilder: (context, index) {
+                  final book = state.books[index];
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => IndexingScreen(
+                                  bookId: book.id,
+                                )),
+                      );
+                    },
+                    child: _buildBookItem(
+                      book.title,
+                      // book.hadiths.length.toString(),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(right: 40.r, top: 53.61.r),
-                      child: Text(
-                        'الأربعون  \n النووية',
-                        style: GoogleFonts.cairo(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600,
-                            height: 42 / 20,
-                            color: AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                  );
+                },
+              );
+            } else if (state is BookError) {
+              return Center(child: Text('خطأ: ${state.message}'));
+            }
+            return const SizedBox();
+          },
         ),
       ),
     );
   }
+}
+
+Widget _buildBookItem(
+  String title,
+  // String number,
+) {
+  return Container(
+    margin: EdgeInsets.all(16.r),
+    width: 300.w,
+    height: 160.h,
+    decoration: BoxDecoration(
+      color: Color(0xFFE9FCFF),
+      border: Border.all(width: 1.w, color: Color(0xFF9FCAD7)),
+    ),
+    child: Stack(
+      children: [
+        // Padding(
+        //   padding: EdgeInsets.only(right: 116.r, top: 47.r),
+        //   child: Text(
+        //     number,
+        //     style: GoogleFonts.cairo(
+        //         fontSize: 110.sp,
+        //         fontWeight: FontWeight.w700,
+        //         height: 0.47,
+        //         color: AppColors.primary),
+        //   ),
+        // ),
+        Padding(
+          padding: EdgeInsets.only(right: 40.r, top: 53.61.r),
+          child: Text(
+            title,
+            style: GoogleFonts.cairo(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                height: 42 / 20,
+                color: AppColors.primary),
+          ),
+        ),
+      ],
+    ),
+  );
 }

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../model/hadith_model.dart';
+import '../../model/hadiths_model.dart';
 import '../../services/record_service.dart';
 import '../../services/upload_service.dart';
 import '../../utils/permissions.dart';
@@ -13,7 +13,7 @@ import '../style/app_colors.dart';
 import '../widgets/audio_waveform_Indicator.dart';
 
 class RecordScreen extends StatefulWidget {
-  final HadithModel hadith;
+  final HadithsModel hadith;
   RecordScreen({Key? key, required this.hadith})
       : super(
           key: key,
@@ -27,7 +27,7 @@ class _RecordScreenState extends State<RecordScreen> {
   final RecordService _recordService = RecordService();
   final UploadService _uploadService = UploadService();
 
-  HadithModel get hadith => widget.hadith;
+  HadithsModel get hadith => widget.hadith;
 
   String? _recordedFilePath;
   String? _transcriptionText;
@@ -834,7 +834,7 @@ class _RecordScreenState extends State<RecordScreen> {
 
     List<TextSpan> spans = [];
     List<String> userWords = _transcriptionText!.split(' ');
-    List<String> originalWords = hadith.text.split(' ');
+    List<String> originalWords = hadith.content.split(' ');
 
     for (int i = 0; i < userWords.length; i++) {
       String userWord = userWords[i];
@@ -875,7 +875,7 @@ class _RecordScreenState extends State<RecordScreen> {
     List<TextSpan> spans = [];
     List<String> correctedWords = _correctedText.split(' ');
     List<String> userWords = _transcriptionText?.split(' ') ?? [];
-    List<String> originalWords = hadith.text.split(' ');
+    List<String> originalWords = hadith.content.split(' ');
 
     for (int i = 0; i < correctedWords.length; i++) {
       String correctedWord = correctedWords[i];
@@ -954,7 +954,7 @@ class _RecordScreenState extends State<RecordScreen> {
       return;
     }
 
-    final originalText = hadith.text;
+    final originalText = hadith.content;
 
     if (userText == originalText) {
       setState(() {
@@ -1031,9 +1031,9 @@ ${corrections.join(' ')}
   }
 
   String _getSuggestionForWord(String word) {
-    if (hadith.text.isEmpty) return word;
+    if (hadith.content.isEmpty) return word;
 
-    final originalWords = hadith.text.split(' ');
+    final originalWords = hadith.content.split(' ');
     double maxSimilarity = 0.0;
     String bestMatch = word;
 

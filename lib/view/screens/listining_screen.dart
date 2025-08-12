@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/view/screens/recordScreen.dart';
 import 'package:tasmeat_app/view/widgets/audio_player.dart';
 
-import '../../model/hadith_model.dart';
+import '../../model/hadiths_model.dart';
 import '../style/app_colors.dart';
 
 class ListiningScreen extends StatelessWidget {
   ListiningScreen({super.key, required this.hadith});
-  final HadithModel hadith;
+  final HadithsModel hadith;
 
   @override
   Widget build(BuildContext context) {

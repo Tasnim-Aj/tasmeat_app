@@ -4,9 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tasmeat_app/bloc/auth/signup/signup_bloc.dart';
-import 'package:tasmeat_app/bloc/hadith_bloc.dart';
+import 'package:tasmeat_app/bloc/book/book_bloc.dart';
+import 'package:tasmeat_app/repo/books_repository/books_repository.dart';
 import 'package:tasmeat_app/services/authentication_service.dart';
-import 'package:tasmeat_app/services/hadith_service.dart';
+import 'package:tasmeat_app/services/books_service.dart';
 import 'package:tasmeat_app/view/style/app_theme.dart';
 
 import 'config/config.dart';
@@ -34,12 +35,16 @@ class MyApp extends StatelessWidget {
       builder: (context, _) {
         return MultiBlocProvider(
           providers: [
-            BlocProvider(
-                create: (context) => HadithBloc(hadithService: HadithService())
-                  ..add(ViewHadithEvent())),
+            // BlocProvider(
+            //     create: (context) => HadithBloc(hadithService: HadithService())
+            //       ..add(ViewHadithEvent())),
             BlocProvider(
                 create: (context) =>
-                    SignupBloc(authenticationService: AuthenticationService()))
+                    SignupBloc(authenticationService: AuthenticationService())),
+            BlocProvider(
+                create: (context) =>
+                    BookBloc(booksRepository: BooksRepository(BooksService()))
+                      ..add(LoadAllBookEvent())),
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,

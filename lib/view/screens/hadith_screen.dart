@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tasmeat_app/model/hadith_model.dart';
 import 'package:tasmeat_app/view/screens/listining_screen.dart';
 import 'package:tasmeat_app/view/style/app_colors.dart';
 
+import '../../model/hadiths_model.dart';
+
 class HadithScreen extends StatelessWidget {
-  final HadithModel hadith;
+  final HadithsModel hadith;
   HadithScreen({super.key, required this.hadith});
 
   @override
@@ -271,9 +272,10 @@ class HadithScreen extends StatelessWidget {
                     ),
                   ]),
               child: Text(
-                '''
-                 قَالَ : سَمِعْتُ رَسُولَ اللهِ ﷺ يَقُولُ : " إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ ، وَإنَّمَا لِكُلِّ امْرِىءٍ مَا نَوَى ، فَمَنْ كَانَتْ هِجْرَتُهُ إِلى اللهِ وَرَسُوله فَهِجْرتُهُ إلى اللهِ وَرَسُوُله ، وَمَنْ كَانَتْ هِجْرَتُهُ لِدُنْيَا يُصِيْبُهَا  أو مرأة  ينكحها فهجرته إلى ما هاجر إليه
-                ''',
+                hadith.content,
+                // '''
+                //  قَالَ : سَمِعْتُ رَسُولَ اللهِ ﷺ يَقُولُ : " إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ ، وَإنَّمَا لِكُلِّ امْرِىءٍ مَا نَوَى ، فَمَنْ كَانَتْ هِجْرَتُهُ إِلى اللهِ وَرَسُوله فَهِجْرتُهُ إلى اللهِ وَرَسُوُله ، وَمَنْ كَانَتْ هِجْرَتُهُ لِدُنْيَا يُصِيْبُهَا  أو مرأة  ينكحها فهجرته إلى ما هاجر إليه
+                // ''',
                 style: GoogleFonts.aladin(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w400,

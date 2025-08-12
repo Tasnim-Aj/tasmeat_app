@@ -66,7 +66,7 @@ class AuthenticationService {
       if (refreshToken == null) return false;
 
       final response = await dio.post(
-        '$baseUrl/refresh',
+        '$baseUrl/auth/refresh',
         data: {"refresh_token": refreshToken},
       );
 

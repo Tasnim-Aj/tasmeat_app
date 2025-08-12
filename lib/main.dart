@@ -10,10 +10,10 @@ import 'package:tasmeat_app/bloc/profile/profile_bloc.dart';
 import 'package:tasmeat_app/repo/books_repository/books_repository.dart';
 import 'package:tasmeat_app/services/authentication_service.dart';
 import 'package:tasmeat_app/services/books_service.dart';
+import 'package:tasmeat_app/view/screens/auth/auth_screen.dart';
 import 'package:tasmeat_app/view/style/app_theme.dart';
 
 import 'config/config.dart';
-import 'view/screens/auth/auth_screen.dart';
 
 void main() async {
   Bloc.observer = MyBlocObserver();
@@ -58,6 +58,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
             theme: themeData,
+            // home: AuthScreen(),
             home: AuthScreen(),
           ),
         );

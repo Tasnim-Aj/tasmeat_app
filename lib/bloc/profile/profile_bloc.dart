@@ -25,6 +25,43 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
     });
 
+    on<ActivatePackageEvent>((event, emit) {
+      if (state is ProfileLoaded) {
+        final currentState = state as ProfileLoaded;
+        final packages = List<Map<String, dynamic>>.from(currentState.packages);
+        final package = packages[event.packageIndex];
+        final int price = package['price'];
+        final int balance = currentState.wallet.balance;
+
+        if (balance >= price) {
+          // خصم السعر من الرصيد
+          final newBalance = balance - price;
+
+          // تحديث الحزمة (مثلاً إضافة حقل isActive)
+          packages[event.packageIndex] = {
+            ...package,
+            'isActive': true,
+          };
+
+          // تحديث المحفظة - لازم توفر طريقة copyWith في WalletModel
+          final updatedWallet =
+              currentState.wallet.copyWith(balance: newBalance);
+
+          emit(currentState.copyWith(
+            wallet: updatedWallet,
+            packages: packages,
+            message: 'تم تفعيل الباقة بنجاح',
+            isSuccess: true,
+          ));
+        } else {
+          emit(currentState.copyWith(
+            message: 'عذراً لا يوجد نقاط كافية في حسابك',
+            isSuccess: false,
+          ));
+        }
+      }
+    });
+
     //   on<FetchWalletEvent>((event, emit) async {
     //     emit(ProfileLoading());
     //     try {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tasmeat_app/model/signup_model.dart';
-import 'package:tasmeat_app/view/screens/types_screen.dart';
+import 'package:tasmeat_app/view/screens/auth/login_screen.dart';
 import 'package:tasmeat_app/view/style/app_theme.dart';
 
 import '../../../bloc/auth/signup/signup_bloc.dart';
@@ -156,7 +156,7 @@ class SignUp1Screen extends StatelessWidget {
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => TypesScreen()));
+                                    builder: (context) => LoginScreen()));
                           }
                           if (state is SignupError) {
                             ScaffoldMessenger.of(context).showSnackBar(

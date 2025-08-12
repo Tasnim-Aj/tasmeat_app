@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tasmeat_app/bloc/auth/login/login_bloc.dart';
 import 'package:tasmeat_app/bloc/auth/signup/signup_bloc.dart';
 import 'package:tasmeat_app/bloc/book/book_bloc.dart';
 import 'package:tasmeat_app/repo/books_repository/books_repository.dart';
@@ -41,6 +42,9 @@ class MyApp extends StatelessWidget {
             BlocProvider(
                 create: (context) =>
                     SignupBloc(authenticationService: AuthenticationService())),
+            BlocProvider(
+                create: (context) =>
+                    LoginBloc(authenticationService: AuthenticationService())),
             BlocProvider(
                 create: (context) =>
                     BookBloc(booksRepository: BooksRepository(BooksService()))

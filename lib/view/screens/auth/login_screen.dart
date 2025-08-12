@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tasmeat_app/bloc/auth/login/login_bloc.dart';
+import 'package:tasmeat_app/model/login_request.dart';
 import 'package:tasmeat_app/view/screens/auth/reset_password1_screen.dart';
 import 'package:tasmeat_app/view/style/app_theme.dart';
 
@@ -7,7 +10,10 @@ import '../../style/app_colors.dart';
 import '../types_screen.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+  LoginScreen({super.key});
+
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +59,7 @@ class LoginScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'البريد الإلكتروني',
+                              'الاسم',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -66,7 +72,8 @@ class LoginScreen extends StatelessWidget {
                               height: 7.h,
                             ),
                             TextField(
-                              keyboardType: TextInputType.emailAddress,
+                              keyboardType: TextInputType.text,
+                              controller: usernameController,
                             ),
                           ],
                         ),
@@ -87,8 +94,10 @@ class LoginScreen extends StatelessWidget {
                               height: 7.h,
                             ),
                             TextField(
-                                // keyboardType: Tex,
-                                ),
+                              controller: passwordController,
+                              obscureText: true,
+                              // keyboardType: Tex,
+                            ),
                           ],
                         ),
                       ],
@@ -124,24 +133,51 @@ class LoginScreen extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(bottom: 20.r),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TypesScreen()));
+                    child: BlocConsumer<LoginBloc, LoginState>(
+                      listener: (context, state) {
+                        if (state is LoginSuccess) {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TypesScreen()));
+                        }
+                        if (state is LoginError) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.error)),
+                          );
+                        }
                       },
-                      child: Text('تسجيل الدخول'),
+                      builder: (context, state) {
+                        bool isLoading = state is LoginLoading;
+                        return ElevatedButton(
+                          onPressed: isLoading
+                              ? null
+                              : () => onLoginButtonPressed(context),
+                          child: isLoading
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(),
+                                )
+                              : Text('تسجيل الدخول'),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-
-            //
           ],
         ),
       ),
     );
+  }
+
+  void onLoginButtonPressed(BuildContext context) {
+    final loginRequest = LoginRequest(
+      username: usernameController.text,
+      password: passwordController.text,
+    );
+    context.read<LoginBloc>().add(LoginRequested(loginRequest: loginRequest));
   }
 }
